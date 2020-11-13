@@ -25,6 +25,7 @@ from sklearn.metrics import classification_report
 #Data
 itemsets = pd.read_pickle("./itemsets.pickle")
 
+
 #Inspect items
 list_itemsets = [inner for outer in itemsets for inner in outer]
 count_items = Counter(list_itemsets)
