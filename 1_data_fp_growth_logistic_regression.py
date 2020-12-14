@@ -24,19 +24,20 @@ from sklearn.metrics import classification_report
 from sklearn.model_selection import KFold
 from sklearn.metrics import mean_squared_error
 
-######################################################################
-#Data
+import matplotlib.pyplot as plt
+import sklearn
+#************************************************
+#i. Data
 itemsets = pd.read_pickle("./itemsets.pickle")
-
 
 #Inspect items
 list_itemsets = [inner for outer in itemsets for inner in outer]
-count_items = Counter(list_itemsets)
-count_items.most_common()
+#count_items = Counter(list_itemsets)
+#count_items.most_common()
 
-
-#One hot encode list of lists
+#One hot encode data (list of lists) 
 def get_df_items(itemsets):
+    '''Creates a one-hot encoded dataframe of the given itemsets'''
     transaction_encoder = TransactionEncoder()
     transaction_encoded_ary = transaction_encoder.fit(itemsets).transform(itemsets)
     #Dataframe
@@ -45,16 +46,32 @@ def get_df_items(itemsets):
 
 df_ohe = get_df_items(itemsets)
 
-##################################################################
+#************************************************
 #Frequent Patterns - For females
+def get_fp_gender(itemsets, gender):
+    '''Get model input X and y for a given gender.  '''
+    
+    #i. Extract the itemsets for which the given gender is present
+    itemsets_gender = [x for x in itemsets if gender in x]   
+    
+    #ii. Create ohe dataframe of items that contain the gender  
+    df_gender = get_df_items(itemsets_gender) 
+    
+    #iii. Frequent Patterns - FP Growth
+    df_fp = fpgrowth(df_gender, min_support= 0.01, max_len = 1, use_colnames=True)
+    
+    #iv.Extract strings from frozen sets
+    df_fp["itemsets_strings"] = df_fp["itemsets"].apply(lambda x: ', '.join(list(x))).astype("unicode")
+    
+    return df_fp
 
+#Female
 #Female clips
 #1. Fiter for the occurence of female in a list
 filterX = 'Female'
 itemsets_female = [x for x in itemsets if filterX in x]   
 #Create ohe dataframe of items that contain female 
 df_female = get_df_items(itemsets_female) 
-
 #2. Frequent Patterns - FP Growth - for female
 df_female_fp = fpgrowth(df_female, min_support= 0.01, max_len = 1, use_colnames=True)
 
@@ -106,35 +123,45 @@ def choose_C_cv(X, y, c_range, plot_color):
     
     #Param setup
     kf = KFold(n_splits = 5)
-    mean_error=[]; std_error=[];
+    mean_f1 =[]; std_f1 =[];
        
     #Loop through each k fold
     for c_param in c_range:
-        mse_temp = [] 
+        f1_temp = [] 
         model = LogisticRegression(penalty= 'l2', C = c_param)
                 
         for train_index, test_index in kf.split(X):           
 
             model.fit(X.iloc[list(train_index)], y[train_index])
             ypred = model.predict(X.iloc[list(test_index)])
-            mse = mean_squared_error(y[test_index],ypred)
-            mse_temp.append(mse)
+            f1X = f1_score(y[test_index],ypred)
+            #mse = mean_squared_error(y[test_index],ypred)
+            f1_temp.append(f1X)
         
         #Get mean & variance
-        mean_error.append(np.array(mse_temp).mean())
-        std_error.append(np.array(mse_temp).std())
+        mean_f1.append(np.array(f1_temp).mean())
+        std_f1.append(np.array(f1_temp).std())
         
     #Plot
-    plt.errorbar(c_range, mean_error, yerr=std_error, color = plot_color)
+    plt.errorbar(c_range, mean_f1, yerr=std_f1, color = plot_color)
     plt.xlabel('C')
-    plt.ylabel('Mean square error')
+    plt.ylabel('Mean F1 score')
     plt.title('Choice of C in Logistic regression - 5 fold CV')
     plt.show()
     
 #Implement
-c_range = [0.01, 0.02, 0.05, 1, 5, 10, 20, 50, 100, 500, 1000]
+c_range = [0.001, 0.01, 1, 10, 30, 50, 100, 500, 1000]
 plot_color = 'g'
 choose_C_cv(X, y, c_range, plot_color)
+
+#Performance
+print(confusion_matrix(ytest, predictions))
+print(classification_report(ytest, predictions))
+
+#Roc 
+
+#Auc
+
 
 
 
@@ -176,3 +203,11 @@ k_range = [2,3,5,7,8,10,15,20,25,40, 60, 100]
 plot_color = 'orange'
 choose_k_knn(X, y, k_range, plot_color)    
 
+#*******************************************
+#3. Baseline model
+
+dummy_clf = DummyClassifier(strategy="most_frequent")
+dummy_clf.fit(X[indices_train], y[indices_train])
+predictions_dummy = dummy_clf.predict(X[indices_test])
+#Confusion matrix
+print(confusion_matrix(ytest, predictions_dummy))
