@@ -15,6 +15,7 @@ from mlxtend.frequent_patterns import (apriori,
 from collections import Counter
 from sklearn.model_selection import train_test_split
 from sklearn.linear_model import LogisticRegression
+from sklearn.neighbors import KNeighborsClassifier
 from sklearn.metrics import confusion_matrix
 from sklearn.metrics import classification_report
 from sklearn.model_selection import KFold
@@ -40,8 +41,6 @@ def get_df_items(itemsets):
     #Dataframe
     df = pd.DataFrame(transaction_encoded_ary, columns= transaction_encoder.columns_)
     return df 
-
-df_ohe = get_df_items(itemsets)
 
 #ii. Frequent Pattern Mining 
 def get_fp_gender(itemsets, gender):
@@ -71,16 +70,18 @@ def get_features(df_fp, df_ohe):
     df_ohe_gender_frs = df_ohe.loc[:, list_gender_freq_items]
     
     #Data
-    X = df_ohe_female_frs.drop(['Female'], axis=1)
+    X = df_ohe_gender_frs.drop(['Female'], axis=1)
 
     #Extract X, y
-    y = df_ohe_female_frs['Female']
+    y = df_ohe_gender_frs['Female']
     
     return X, y 
 
-#Apply to female
+#Apply - get ohe dataframe of itemsets
+df_ohe = get_df_items(itemsets)
+
 gender = 'Female'
-df_female_fp = get_fp_gender(itemsets, gender) 
+df_fp = get_fp_gender(itemsets, gender) 
 
 X, y = get_features(df_fp, df_ohe)
 
@@ -96,18 +97,6 @@ Xtrain, Xtest, ytrain, ytest, = train_test_split(X, y, test_size= testSizeX, ran
 #************************************************************************************
 #Model 1 - Logistic Regression
 
-log_reg_model = LogisticRegression(penalty= 'l2')
-log_reg_model.fit(Xtrain, ytrain)
-#log_reg_model.intercept_
-#log_reg_model.coef_
-#Predictions
-predictions = log_reg_model.predict(Xtest)
-
-#Performance
-print(confusion_matrix(ytest, predictions))
-print(classification_report(ytest, predictions))
-
-#******************
 #i. Choose c
 def choose_C_cv(X, y, c_range, plot_color):
     '''Implement 5 fold cross validation for testing 
@@ -145,17 +134,23 @@ def choose_C_cv(X, y, c_range, plot_color):
     
 #Implement
 c_range = [0.001, 0.01, 1, 10, 30, 50, 100, 500, 1000]
-plot_color = 'g'
+plot_color = 'g' 
 choose_C_cv(X, y, c_range, plot_color)
 
+#Final model (use default penalty term - no performance improvement for varying penalty)
+log_reg_model = LogisticRegression(penalty= 'l2')
+log_reg_model.fit(Xtrain, ytrain)
+#log_reg_model.intercept_
+#log_reg_model.coef_
+#Predictions
+predictions = log_reg_model.predict(Xtest)
 
-#Performance on final model 
+#Performance
 print(confusion_matrix(ytest, predictions))
 print(classification_report(ytest, predictions))
 
+
 #Auc
-
-
 
 
 #************************************************
@@ -166,34 +161,39 @@ def choose_k_knn(X, y, k_range, plot_color):
     
     #Param setup
     kf = KFold(n_splits = 5)
-    mean_error=[]; std_error=[];
+    mean_f1 =[]; std_f1 =[];
        
     #Loop through each k fold
     for k in k_range:
-        mse_temp = []
+        print('k = {}'.format(k))
+        f1_temp = []; count = 0;
         model = KNeighborsClassifier(n_neighbors = k, weights= 'uniform')
                 
-        for train, test in kf.split(X):
-            
-            model.fit(X[train], y[train])
-            ypred = model.predict(X[test])
-            mse = mean_squared_error(y[test],ypred)
-            mse_temp.append(mse)
+        for train_index, test_index in kf.split(X):
+            count = count + 1 
+            print('count kf = {}'.format(count))
+            model.fit(X.iloc[list(train_index)], y[train_index])
+            ypred = model.predict(X.iloc[list(test_index)])
+            f1X = f1_score(y[test_index],ypred)
+            f1_temp.append(f1X)
         
-        #Get mean & variance
-        mean_error.append(np.array(mse_temp).mean())
-        std_error.append(np.array(mse_temp).std())
+        #Get mean & 
+        print('mean f1 = {}'.format(np.array(f1_temp).mean()))
+        mean_f1.append(np.array(f1_temp).mean())
+        print('std f1 = {}'.format(np.array(f1_temp).std()))
+        std_f1.append(np.array(f1_temp).std())
         
     #Plot
-    plt.errorbar(k_range, mean_error, yerr=std_error, color = plot_color)
+    plt.errorbar(k_range, mean_f1, yerr=std_f1, color = plot_color)
     plt.xlabel('k')
-    plt.ylabel('Mean square error')
+    plt.ylabel('Mean F1 score')
     plt.title('kNN - 5 fold CV')
     plt.show()
 
 #Implement
-k_range = [2,3,5,7,8,10,15,20,25,40, 60, 100]
+k_range = [2000, 1500, 1250, 1000, 750, 500, 250, 100 ] # [2, 10, 50, 100, 250, 500, 750, 1000, 1250, 1500, 2000]
 plot_color = 'orange'
+
 choose_k_knn(X, y, k_range, plot_color)    
 
 #*******************************************
