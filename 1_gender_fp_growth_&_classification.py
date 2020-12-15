@@ -114,13 +114,18 @@ def check_redundant(l, ref):
     
 #Apply - get ohe dataframe of itemsets
 df_ohe = get_df_items(itemsets)
-#Get female df
-#redundant_labels = ['Woman', 'Girl']
-gender = 'Female'
-redundant_labels = check_redundant(itemsets, gender)
-df_fp = get_fp_gender(itemsets, gender, redundant_labels) 
 
-X, y = get_features(df_fp, df_ohe)
+#Get female features
+redundant_labels_f = check_redundant(itemsets, 'Female')
+df_fp_f = get_fp_gender(itemsets, gender, redundant_labels_f) 
+
+X_f, y_f = get_features(df_fp_f, df_ohe)
+
+#Get male features
+redundant_labels_m = check_redundant(itemsets, 'Man')
+df_fp_m = get_fp_gender(itemsets, gender, redundant_labels_m) 
+
+X_m, y_m = get_features(df_fp_m, df_ohe)
 
 #**************************************************************
 #Modelling 
@@ -137,7 +142,7 @@ def choose_C_cv(X, y, c_range, plot_color):
     
     #Param setup
     kf = KFold(n_splits = 5)
-    mean_f1 =[]; std_f1 =[];
+    mean_f1 =[]; std_f1 =[]
        
     #Loop through each k fold
     for c_param in c_range:
@@ -172,22 +177,37 @@ choose_C_cv(X, y, c_range, plot_color)
 
 #Final model (use default penalty term - no performance improvement for varying penalty)
 
-#Train + Test set
-testSizeX = 0.33 #67:33 split
-Xtrain, Xtest, ytrain, ytest, = train_test_split(X, y, test_size= testSizeX, random_state=42)
+def split_features(X,y):
+    #Train + Test set
+    testSizeX = 0.33 #67:33 split
+    Xtrain, Xtest, ytrain, ytest = train_test_split(X, y, test_size= testSizeX, random_state=42)
+    return Xtrain, Xtest, ytrain, ytest
 
-log_reg_model = LogisticRegression(penalty= 'l2')
-log_reg_model.fit(Xtrain, ytrain)
+def run_logistic(Xtrain, Xtest, ytrain, ytest):
+    log_reg_model = LogisticRegression(penalty= 'l2')
+    log_reg_model.fit(Xtrain, ytrain)
 
-#log_reg_model.intercept_
-#log_reg_model.coef_
-#Predictions
-predictions = log_reg_model.predict(Xtest)
+    #log_reg_model.intercept_
+    #log_reg_model.coef_
+    #Predictions
+    predictions = log_reg_model.predict(Xtest)
 
-#Performance
-print(confusion_matrix(ytest, predictions))
-print(classification_report(ytest, predictions))
+    #Performance
+    print(confusion_matrix(ytest, predictions))
+    print(classification_report(ytest, predictions))
 
+# Get train test splits for each gender
+Xtrain_f, Xtest_f, ytrain_f, ytest_f = split_features(X_f, y_f)
+Xtrain_m, Xtest_m, ytrain_m, ytest_m = split_features(X_m, y_m)
+
+# Run the logistic regression model 
+# i. Use the matching gender's features
+run_logistic(Xtrain_f, Xtest_f, ytrain_f, ytest_f)
+run_logistic(Xtrain_m, Xtest_m, ytrain_m, ytest_m)
+
+# ii. Cross features to see if differences arise
+run_logistic(Xtrain_f, Xtest_f, ytrain_m, ytest_m)
+run_logistic(Xtrain_m, Xtest_m, ytrain_f, ytest_f)
 
 #Auc
 
@@ -228,18 +248,24 @@ def choose_C_SVM_cv(X, y, c_range, plot_color):
     plt.title('Choice of penatly term C in SVM - 5 fold CV')
     plt.show()
 
-
-
 #*******************************************
 #3. Baseline model
+def run_dummy(Xtrain, Xtest, ytrain, ytest):
+    dummy_clf = DummyClassifier(strategy="most_frequent")
+    dummy_clf.fit(Xtrain, ytrain)
+    predictions_dummy = dummy_clf.predict(Xtest)
 
-dummy_clf = DummyClassifier(strategy="most_frequent")
-dummy_clf.fit(Xtrain, ytrain)
-predictions_dummy = dummy_clf.predict(Xtest)
+    #Evaluation
+    print(confusion_matrix(ytest, predictions_dummy))
+    print(classification_report(ytest, predictions_dummy))
 
-#Evaluation
-print(confusion_matrix(ytest, predictions_dummy))
-print(classification_report(ytest, predictions_dummy))
+# i. Use the matching gender's features
+run_dummy(Xtrain_f, Xtest_f, ytrain_f, ytest_f)
+run_dummy(Xtrain_m, Xtest_m, ytrain_m, ytest_m)
+
+# ii. Cross features to see if differences arise
+run_dummy(Xtrain_f, Xtest_f, ytrain_m, ytest_m)
+run_dummy(Xtrain_m, Xtest_m, ytrain_f, ytest_f)
 
 
 #*************************************************
@@ -276,8 +302,5 @@ def plot_roc_models(Xtest, ytest, log_reg_model, knn_model, dummy_clf):
     
 #Implement
 plot_roc_models(Xtest, ytest, log_reg_model, knn_model, dummy_clf)
-
-
-
 
 #Test
