@@ -18,6 +18,7 @@ from sklearn.linear_model import LogisticRegression
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn.metrics import confusion_matrix
 from sklearn.metrics import classification_report
+from sklearn.metrics import f1_score
 from sklearn.model_selection import KFold
 from sklearn.metrics import mean_squared_error
 
@@ -43,13 +44,16 @@ def get_df_items(itemsets):
     return df 
 
 #ii. Frequent Pattern Mining 
-def get_fp_gender(itemsets, gender):
+def get_fp_gender(itemsets, gender, redundant_labels):
     '''Get model input X and y for a given gender.  '''
     
     #i. Extract the itemsets for which the given gender is present
-    itemsets_gender = [x for x in itemsets if gender in x]   
+    itemsets_genderI = [inner_items for inner_items in itemsets if gender in inner_items]   
     
-    #ii. Create ohe dataframe of items that contain the gender  
+    #ii. Remove redundant labels
+    itemsets_gender = [[item for item in inner_items if item not in redundant_labels] for inner_items in itemsets_genderI]  
+        
+    #iii. Create ohe dataframe of items that contain the gender  
     df_gender = get_df_items(itemsets_gender) 
     
     #iii. Frequent Patterns - FP Growth
@@ -79,18 +83,15 @@ def get_features(df_fp, df_ohe):
 
 #Apply - get ohe dataframe of itemsets
 df_ohe = get_df_items(itemsets)
-
+#Get female df
+redundant_labels = ['Woman', 'Girl']
 gender = 'Female'
-df_fp = get_fp_gender(itemsets, gender) 
+df_fp = get_fp_gender(itemsets, gender, redundant_labels) 
 
 X, y = get_features(df_fp, df_ohe)
 
 #**************************************************************
 #Modelling 
-
-#Train + Test set
-testSizeX = 0.33 #67:33 split
-Xtrain, Xtest, ytrain, ytest, = train_test_split(X, y, test_size= testSizeX, random_state=42)
 #Count of female == 1
 #np.count_nonzero(ytest)
 
@@ -138,8 +139,14 @@ plot_color = 'g'
 choose_C_cv(X, y, c_range, plot_color)
 
 #Final model (use default penalty term - no performance improvement for varying penalty)
+
+#Train + Test set
+testSizeX = 0.33 #67:33 split
+Xtrain, Xtest, ytrain, ytest, = train_test_split(X, y, test_size= testSizeX, random_state=42)
+
 log_reg_model = LogisticRegression(penalty= 'l2')
 log_reg_model.fit(Xtrain, ytrain)
+
 #log_reg_model.intercept_
 #log_reg_model.coef_
 #Predictions
@@ -154,47 +161,42 @@ print(classification_report(ytest, predictions))
 
 
 #************************************************
-#knn 
-#i. Choose k
-def choose_k_knn(X, y, k_range, plot_color):
-    '''knn - Implement 5 fold cross validation for determinine optimal k'''
+#SVM
+def choose_C_SVM_cv(X, y, c_range, plot_color):
+    '''Implement 5 fold cross validation for testing 
+    regression model (lasso or ridge) and plot results'''
     
     #Param setup
     kf = KFold(n_splits = 5)
     mean_f1 =[]; std_f1 =[];
        
     #Loop through each k fold
-    for k in k_range:
-        print('k = {}'.format(k))
-        f1_temp = []; count = 0;
-        model = KNeighborsClassifier(n_neighbors = k, weights= 'uniform')
+    for c_param in c_range:
+        print('C = {}'.format(c_param))
+        count = 0; f1_temp = [] 
+        model = LinearSVC(C = c_param)
                 
-        for train_index, test_index in kf.split(X):
+        for train_index, test_index in kf.split(X):           
             count = count + 1 
             print('count kf = {}'.format(count))
             model.fit(X.iloc[list(train_index)], y[train_index])
             ypred = model.predict(X.iloc[list(test_index)])
             f1X = f1_score(y[test_index],ypred)
+            #mse = mean_squared_error(y[test_index],ypred)
             f1_temp.append(f1X)
         
-        #Get mean & 
-        print('mean f1 = {}'.format(np.array(f1_temp).mean()))
+        #Get mean & variance
         mean_f1.append(np.array(f1_temp).mean())
-        print('std f1 = {}'.format(np.array(f1_temp).std()))
         std_f1.append(np.array(f1_temp).std())
         
     #Plot
-    plt.errorbar(k_range, mean_f1, yerr=std_f1, color = plot_color)
-    plt.xlabel('k')
+    plt.errorbar(c_range, mean_f1, yerr=std_f1, color = plot_color)
+    plt.xlabel('C')
     plt.ylabel('Mean F1 score')
-    plt.title('kNN - 5 fold CV')
+    plt.title('Choice of penatly term C in SVM - 5 fold CV')
     plt.show()
 
-#Implement
-k_range = [2000, 1500, 1250, 1000, 750, 500, 250, 100 ] # [2, 10, 50, 100, 250, 500, 750, 1000, 1250, 1500, 2000]
-plot_color = 'orange'
 
-choose_k_knn(X, y, k_range, plot_color)    
 
 #*******************************************
 #3. Baseline model
@@ -240,3 +242,8 @@ def plot_roc_models(Xtest, ytest, log_reg_model, knn_model, dummy_clf):
     
 #Implement
 plot_roc_models(Xtest, ytest, log_reg_model, knn_model, dummy_clf)
+
+
+
+
+#Test
