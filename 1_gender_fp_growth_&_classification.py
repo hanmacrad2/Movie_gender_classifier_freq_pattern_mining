@@ -8,6 +8,8 @@ Created on Mon Dec 14 20:51:30 2020
 #Imports
 import numpy as np
 import pandas as pd
+import itertools
+
 from mlxtend.preprocessing import TransactionEncoder
 from mlxtend.frequent_patterns import fpgrowth
 from mlxtend.frequent_patterns import (apriori,
@@ -21,6 +23,7 @@ from sklearn.metrics import classification_report
 from sklearn.metrics import f1_score
 from sklearn.model_selection import KFold
 from sklearn.metrics import mean_squared_error
+from sklearn.dummy import DummyClassifier
 
 #************************************************
 #i. Data
@@ -81,11 +84,40 @@ def get_features(df_fp, df_ohe):
     
     return X, y 
 
+def check_redundant(l, ref):
+    """Find the elements of l which always occur with word ref"""
+    
+    #i. Condense l to only those elements containing ref
+    l = [i for i in l if ref in i]
+
+    #ii. Define valid which checks whether two words in an element of l always occur together
+    def valid(p):
+        for s in l:
+            if any(e in s for e in p) and not all(e in s for e in p):
+                return False
+            return True
+    
+    #iii. Find unique words
+    elements = list(set(b for a in l for b in a))
+
+    #iv. Check all pairs of combinations and store in a list to return
+    pairs = []
+    for c in itertools.combinations(elements, 2):
+        if ref in c:
+            if valid(c):
+                pairs.append(c)
+    
+    pairs = list(set(b for a in pairs for b in a))
+    pairs.remove(ref)
+
+    return pairs
+    
 #Apply - get ohe dataframe of itemsets
 df_ohe = get_df_items(itemsets)
 #Get female df
-redundant_labels = ['Woman', 'Girl']
+#redundant_labels = ['Woman', 'Girl']
 gender = 'Female'
+redundant_labels = check_redundant(itemsets, gender)
 df_fp = get_fp_gender(itemsets, gender, redundant_labels) 
 
 X, y = get_features(df_fp, df_ohe)
@@ -202,10 +234,12 @@ def choose_C_SVM_cv(X, y, c_range, plot_color):
 #3. Baseline model
 
 dummy_clf = DummyClassifier(strategy="most_frequent")
-dummy_clf.fit(X[indices_train], y[indices_train])
-predictions_dummy = dummy_clf.predict(X[indices_test])
-#Confusion matrix
+dummy_clf.fit(Xtrain, ytrain)
+predictions_dummy = dummy_clf.predict(Xtest)
+
+#Evaluation
 print(confusion_matrix(ytest, predictions_dummy))
+print(classification_report(ytest, predictions_dummy))
 
 
 #*************************************************
