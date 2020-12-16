@@ -9,6 +9,7 @@ Created on Mon Dec 14 20:51:30 2020
 import numpy as np
 import pandas as pd
 import itertools
+import matplotlib.pyplot as plt
 
 from mlxtend.preprocessing import TransactionEncoder
 from mlxtend.frequent_patterns import fpgrowth
@@ -24,6 +25,7 @@ from sklearn.metrics import f1_score
 from sklearn.model_selection import KFold
 from sklearn.metrics import mean_squared_error
 from sklearn.dummy import DummyClassifier
+from sklearn.svm import LinearSVC
 
 #************************************************
 #i. Data
@@ -116,16 +118,23 @@ def check_redundant(l, ref):
 df_ohe = get_df_items(itemsets)
 
 #Get female features
-redundant_labels_f = check_redundant(itemsets, 'Female')
-df_fp_f = get_fp_gender(itemsets, gender, redundant_labels_f) 
+#redundant_labels_f = check_redundant(itemsets, 'Female')
+redundant_labels_f = ['Person','Face','Woman','Human','Indoors','Head']
+df_fp_f = get_fp_gender(itemsets, 'Female', redundant_labels_f) 
 
 X_f, y_f = get_features(df_fp_f, df_ohe)
 
 #Get male features
-redundant_labels_m = check_redundant(itemsets, 'Man')
-df_fp_m = get_fp_gender(itemsets, gender, redundant_labels_m) 
+#redundant_labels_m = check_redundant(itemsets, 'Man')
+redundant_labels_m = ['Person','Face','Human','Indoors','Head']
+df_fp_m = get_fp_gender(itemsets, 'Man', redundant_labels_m) 
 
 X_m, y_m = get_features(df_fp_m, df_ohe)
+
+# Get train test splits for each gender
+testSizeX = 0.33 #67:33 split
+Xtrain_f, Xtest_f, ytrain_f, ytest_f = train_test_split(X_f, y_f, test_size= testSizeX, random_state=42)
+Xtrain_m, Xtest_m, ytrain_m, ytest_m = train_test_split(X_m, y_m, test_size= testSizeX, random_state=42)
 
 #**************************************************************
 #Modelling 
@@ -177,12 +186,6 @@ choose_C_cv(X, y, c_range, plot_color)
 
 #Final model (use default penalty term - no performance improvement for varying penalty)
 
-def split_features(X,y):
-    #Train + Test set
-    testSizeX = 0.33 #67:33 split
-    Xtrain, Xtest, ytrain, ytest = train_test_split(X, y, test_size= testSizeX, random_state=42)
-    return Xtrain, Xtest, ytrain, ytest
-
 def run_logistic(Xtrain, Xtest, ytrain, ytest):
     log_reg_model = LogisticRegression(penalty= 'l2')
     log_reg_model.fit(Xtrain, ytrain)
@@ -195,10 +198,6 @@ def run_logistic(Xtrain, Xtest, ytrain, ytest):
     #Performance
     print(confusion_matrix(ytest, predictions))
     print(classification_report(ytest, predictions))
-
-# Get train test splits for each gender
-Xtrain_f, Xtest_f, ytrain_f, ytest_f = split_features(X_f, y_f)
-Xtrain_m, Xtest_m, ytrain_m, ytest_m = split_features(X_m, y_m)
 
 # Run the logistic regression model 
 # i. Use the matching gender's features
@@ -220,7 +219,7 @@ def choose_C_SVM_cv(X, y, c_range, plot_color):
     
     #Param setup
     kf = KFold(n_splits = 5)
-    mean_f1 =[]; std_f1 =[];
+    mean_f1 =[]; std_f1 =[]
        
     #Loop through each k fold
     for c_param in c_range:
