@@ -19,9 +19,7 @@ from collections import Counter
 from sklearn.model_selection import train_test_split
 from sklearn.linear_model import LogisticRegression
 from sklearn.neighbors import KNeighborsClassifier
-from sklearn.metrics import confusion_matrix
-from sklearn.metrics import classification_report
-from sklearn.metrics import f1_score
+from sklearn.metrics import confusion_matrix, classification_report, f1_score, roc_curve
 from sklearn.model_selection import KFold
 from sklearn.metrics import mean_squared_error
 from sklearn.dummy import DummyClassifier
@@ -199,14 +197,16 @@ def run_logistic(Xtrain, Xtest, ytrain, ytest):
     print(confusion_matrix(ytest, predictions))
     print(classification_report(ytest, predictions))
 
+    return log_reg_model
+
 # Run the logistic regression model 
 # i. Use the matching gender's features
-run_logistic(Xtrain_f, Xtest_f, ytrain_f, ytest_f)
-run_logistic(Xtrain_m, Xtest_m, ytrain_m, ytest_m)
+log_reg_model_f = run_logistic(Xtrain_f, Xtest_f, ytrain_f, ytest_f)
+log_reg_model_m = run_logistic(Xtrain_m, Xtest_m, ytrain_m, ytest_m)
 
 # ii. Cross features to see if differences arise
-run_logistic(Xtrain_f, Xtest_f, ytrain_m, ytest_m)
-run_logistic(Xtrain_m, Xtest_m, ytrain_f, ytest_f)
+log_reg_model_f_for_m = run_logistic(Xtrain_f, Xtest_f, ytrain_m, ytest_m)
+log_reg_model_m_for_f = run_logistic(Xtrain_m, Xtest_m, ytrain_f, ytest_f)
 
 #Auc
 
@@ -258,19 +258,22 @@ def run_dummy(Xtrain, Xtest, ytrain, ytest):
     print(confusion_matrix(ytest, predictions_dummy))
     print(classification_report(ytest, predictions_dummy))
 
+    return dummy_clf
+
 # i. Use the matching gender's features
-run_dummy(Xtrain_f, Xtest_f, ytrain_f, ytest_f)
-run_dummy(Xtrain_m, Xtest_m, ytrain_m, ytest_m)
+dummy_clf_f = run_dummy(Xtrain_f, Xtest_f, ytrain_f, ytest_f)
+dummy_clf_m = run_dummy(Xtrain_m, Xtest_m, ytrain_m, ytest_m)
 
 # ii. Cross features to see if differences arise
-run_dummy(Xtrain_f, Xtest_f, ytrain_m, ytest_m)
-run_dummy(Xtrain_m, Xtest_m, ytrain_f, ytest_f)
+dummy_clf_f_for_m = run_dummy(Xtrain_f, Xtest_f, ytrain_m, ytest_m)
+dummy_clf_m_for_f = run_dummy(Xtrain_m, Xtest_m, ytrain_f, ytest_f)
 
 
 #*************************************************
 #Compare performance - ROC curve
 
-def plot_roc_models(Xtest, ytest, log_reg_model, knn_model, dummy_clf):
+#put back in svm_model
+def plot_roc_models(Xtest, ytest, log_reg_model, dummy_clf):
     'Plot ROC Curve of implemented models'
     
     #Logistic Regression model
@@ -278,10 +281,10 @@ def plot_roc_models(Xtest, ytest, log_reg_model, knn_model, dummy_clf):
     fpr, tpr, _= roc_curve(ytest, scores)
     plt.plot(fpr,tpr, label = 'Logistic Regression')
 
-    #knn model
-    scores = knn_model.predict_proba(Xtest)
-    fpr, tpr, _= roc_curve(ytest, scores[:, 1])
-    plt.plot(fpr,tpr, color = 'r', label = 'knn')
+    #svm model
+    #scores = svm_model.predict_proba(Xtest)
+    #fpr, tpr, _= roc_curve(ytest, scores[:, 1])
+    #plt.plot(fpr,tpr, color = 'r', label = 'knn')
 
     #Baseline Model
     scores_bl = dummy_clf.predict_proba(Xtest)
@@ -296,10 +299,11 @@ def plot_roc_models(Xtest, ytest, log_reg_model, knn_model, dummy_clf):
     plt.ylabel('True positive rate')
     plt.title('ROC Curve') #  - Logistic Regression')
 
-    plt.legend(['Logistic Regression', 'knn', 'Baseline ','Random Classifier'])
-    plt.show()    
+    #put back in svm
+    plt.legend(['Logistic Regression', 'Baseline ','Random Classifier']) 
+    plt.show()
     
 #Implement
-plot_roc_models(Xtest, ytest, log_reg_model, knn_model, dummy_clf)
+plot_roc_models(Xtest_f, ytest_f, log_reg_model_f, dummy_clf_f)
 
 #Test
