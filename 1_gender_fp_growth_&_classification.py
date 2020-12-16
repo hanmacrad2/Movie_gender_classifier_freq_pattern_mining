@@ -139,7 +139,7 @@ Xtrain_m, Xtest_m, ytrain_m, ytest_m = train_test_split(X_m, y_m, test_size= tes
 #Count of female == 1
 #np.count_nonzero(ytest)
 
-#************************************************************************************
+#*******************************************************************************************************
 #Model 1 - Logistic Regression
 
 #i. Choose c
@@ -196,6 +196,11 @@ def run_logistic(Xtrain, Xtest, ytrain, ytest):
     #Performance
     print(confusion_matrix(ytest, predictions))
     print(classification_report(ytest, predictions))
+    
+    #Auc
+    scores = log_reg_model.predict_proba(Xtest)
+    fpr, tpr, _= roc_curve(ytest, scores[:, 1])
+    print('AUC = {}'.format(metrics.auc(fpr, tpr)))
 
     return log_reg_model
 
@@ -208,10 +213,8 @@ log_reg_model_m = run_logistic(Xtrain_m, Xtest_m, ytrain_m, ytest_m)
 log_reg_model_f_for_m = run_logistic(Xtrain_f, Xtest_f, ytrain_m, ytest_m)
 log_reg_model_m_for_f = run_logistic(Xtrain_m, Xtest_m, ytrain_f, ytest_f)
 
-#Auc
 
-
-#************************************************
+#*********************************************************************************************************
 #SVM
 def choose_C_SVM_cv(X, y, c_range, plot_color):
     '''Implement 5 fold cross validation for testing 
@@ -233,7 +236,6 @@ def choose_C_SVM_cv(X, y, c_range, plot_color):
             model.fit(X.iloc[list(train_index)], y[train_index])
             ypred = model.predict(X.iloc[list(test_index)])
             f1X = f1_score(y[test_index],ypred)
-            #mse = mean_squared_error(y[test_index],ypred)
             f1_temp.append(f1X)
         
         #Get mean & variance
@@ -247,6 +249,41 @@ def choose_C_SVM_cv(X, y, c_range, plot_color):
     plt.title('Choice of penatly term C in SVM - 5 fold CV')
     plt.show()
 
+#Implement
+c_range = [0.001, 0.01, 1, 10, 30, 50, 100, 500, 1000]
+plot_color = 'g' 
+choose_C_SVM_cv(X, y, c_range, plot_color)
+
+def run_svm(Xtrain, Xtest, ytrain, ytest):
+    svm_model = LinearSVC(C = c_param)
+    svm_model.fit(Xtrain, ytrain)
+
+    #log_reg_model.intercept_
+    #log_reg_model.coef_
+    #Predictions
+    predictions = svm_model.predict(Xtest)
+
+    #Performance
+    print(confusion_matrix(ytest, predictions))
+    print(classification_report(ytest, predictions))
+    
+    #Auc
+    scores = svm_model.predict_proba(Xtest)
+    fpr, tpr, _= roc_curve(ytest, scores[:, 1])
+    print('AUC = {}'.format(metrics.auc(fpr, tpr)))
+
+    return svm_model
+
+# Run svm model 
+**Wait to define c parameter
+# i. Use the matching gender's features
+#svm_model_f = run_svm(Xtrain_f, Xtest_f, ytrain_f, ytest_f)
+#svm_model_m = run_svm(Xtrain_m, Xtest_m, ytrain_m, ytest_m)
+
+# ii. Cross features to see if differences arise
+#svm_model_f_for_m = run_svm(Xtrain_f, Xtest_f, ytrain_m, ytest_m)
+#svm_model_m_for_f = run_svm(Xtrain_m, Xtest_m, ytrain_f, ytest_f)
+
 #*******************************************
 #3. Baseline model
 def run_dummy(Xtrain, Xtest, ytrain, ytest):
@@ -257,6 +294,11 @@ def run_dummy(Xtrain, Xtest, ytrain, ytest):
     #Evaluation
     print(confusion_matrix(ytest, predictions_dummy))
     print(classification_report(ytest, predictions_dummy))
+    
+    #Auc
+    scores_bl = dummy_clf.predict_proba(Xtest)
+    fpr, tpr, _= roc_curve(ytest, scores_bl[:, 1])
+    print('AUC = {}'.format(metrics.auc(fpr, tpr)))
 
     return dummy_clf
 
@@ -273,23 +315,26 @@ dummy_clf_m_for_f = run_dummy(Xtrain_m, Xtest_m, ytrain_f, ytest_f)
 #Compare performance - ROC curve
 
 #put back in svm_model
-def plot_roc_models(Xtest, ytest, log_reg_model, dummy_clf):
+def plot_roc_models(Xtest, ytest, log_reg_model, svm_model, dummy_clf):
     'Plot ROC Curve of implemented models'
     
     #Logistic Regression model
     scores = log_reg_model.decision_function(Xtest)
     fpr, tpr, _= roc_curve(ytest, scores)
     plt.plot(fpr,tpr, label = 'Logistic Regression')
+    print('AUC = {}'.format(metrics.auc(fpr, tpr)))
 
     #svm model
-    #scores = svm_model.predict_proba(Xtest)
-    #fpr, tpr, _= roc_curve(ytest, scores[:, 1])
-    #plt.plot(fpr,tpr, color = 'r', label = 'knn')
+    scores = svm_model.predict_proba(Xtest)
+    fpr, tpr, _= roc_curve(ytest, scores[:, 1])
+    plt.plot(fpr,tpr, color = 'r', label = 'knn')
+    print('AUC = {}'.format(metrics.auc(fpr, tpr)))
 
     #Baseline Model
     scores_bl = dummy_clf.predict_proba(Xtest)
     fpr, tpr, _= roc_curve(ytest, scores_bl[:, 1])
     plt.plot(fpr,tpr, color = 'orange', label = 'baseline model')
+    print('AUC = {}'.format(metrics.auc(fpr, tpr)))
     
     #Random Choice
     plt.plot([0, 1], [0, 1],'g--') 
@@ -300,10 +345,10 @@ def plot_roc_models(Xtest, ytest, log_reg_model, dummy_clf):
     plt.title('ROC Curve') #  - Logistic Regression')
 
     #put back in svm
-    plt.legend(['Logistic Regression', 'Baseline ','Random Classifier']) 
+    plt.legend(['Logistic Regression', 'SVM', 'Baseline ','Random Classifier']) 
     plt.show()
     
 #Implement
-plot_roc_models(Xtest_f, ytest_f, log_reg_model_f, dummy_clf_f)
+plot_roc_models(Xtest_f, ytest_f, svm_model, log_reg_model_f, dummy_clf_f)
 
 #Test
