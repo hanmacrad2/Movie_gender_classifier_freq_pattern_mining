@@ -2,7 +2,7 @@
 """
 Created on Mon Dec 14 20:51:30 2020
 
-@author: Hannah Craddock
+@author: Hannah Craddock, Cliona O'Doherty
 """
 
 #Imports
@@ -16,6 +16,7 @@ from mlxtend.frequent_patterns import fpgrowth
 from mlxtend.frequent_patterns import (apriori,
                                        association_rules)
 from collections import Counter
+
 from sklearn.model_selection import train_test_split
 from sklearn.linear_model import LogisticRegression
 from sklearn.neighbors import KNeighborsClassifier
