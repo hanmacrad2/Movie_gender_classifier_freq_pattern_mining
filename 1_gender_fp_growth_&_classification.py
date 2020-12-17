@@ -19,8 +19,7 @@ from collections import Counter
 
 from sklearn.model_selection import train_test_split
 from sklearn.linear_model import LogisticRegression
-from sklearn.neighbors import KNeighborsClassifier
-from sklearn.metrics import confusion_matrix, classification_report, f1_score, roc_curve
+from sklearn.metrics import confusion_matrix, classification_report, f1_score, roc_curve, auc
 from sklearn.model_selection import KFold
 from sklearn.metrics import mean_squared_error
 from sklearn.dummy import DummyClassifier
@@ -117,7 +116,11 @@ def check_redundant(l, ref):
 df_ohe = get_df_items(itemsets)
 
 #Get female features
+
+#use check_redundant to get all labels that when they appear, always appear with 'Female'
 #redundant_labels_f = check_redundant(itemsets, 'Female')
+
+#Select the synonymous or uninformative labels that occur redundantly with 'Female' (from check_redundant)
 redundant_labels_f = ['Person','Face','Woman','Human','Indoors','Head']
 df_fp_f = get_fp_gender(itemsets, 'Female', redundant_labels_f) 
 
@@ -179,9 +182,13 @@ def choose_C_cv(X, y, c_range, plot_color):
     plt.show()
     
 #Implement
-c_range = [0.001, 0.01, 1, 10, 30, 50, 100, 500, 1000]
+c_range = [0.001, 0.01, 1, 10, 100, 1000]
 plot_color = 'g' 
-choose_C_cv(X, y, c_range, plot_color)
+
+#i. get female cv results
+choose_C_cv(X_f, y_f, c_range, plot_color)
+#ii. get male cv results
+choose_C_cv(X_m, y_m, c_range, plot_color)
 
 #Final model (use default penalty term - no performance improvement for varying penalty)
 
@@ -201,7 +208,7 @@ def run_logistic(Xtrain, Xtest, ytrain, ytest):
     #Auc
     scores = log_reg_model.predict_proba(Xtest)
     fpr, tpr, _= roc_curve(ytest, scores[:, 1])
-    print('AUC = {}'.format(metrics.auc(fpr, tpr)))
+    print('AUC = {}'.format(auc(fpr, tpr)))
 
     return log_reg_model
 
@@ -211,7 +218,11 @@ log_reg_model_f = run_logistic(Xtrain_f, Xtest_f, ytrain_f, ytest_f)
 log_reg_model_m = run_logistic(Xtrain_m, Xtest_m, ytrain_m, ytest_m)
 
 # ii. Cross features to see if differences arise
+c_range = [0.001, 0.01, 1, 10]
+choose_C_cv(X_f, y_m, c_range, plot_color)
 log_reg_model_f_for_m = run_logistic(Xtrain_f, Xtest_f, ytrain_m, ytest_m)
+
+#choose_C_cv(X_m, y_f, c_range, plot_color)
 log_reg_model_m_for_f = run_logistic(Xtrain_m, Xtest_m, ytrain_f, ytest_f)
 
 
@@ -251,11 +262,15 @@ def choose_C_SVM_cv(X, y, c_range, plot_color):
     plt.show()
 
 #Implement
-c_range = [0.001, 0.01, 1, 10, 30, 50, 100, 500, 1000]
+c_range = [0.001, 0.01, 1, 10, 100]
 plot_color = 'g' 
-choose_C_SVM_cv(X, y, c_range, plot_color)
 
-def run_svm(Xtrain, Xtest, ytrain, ytest):
+#i. female cv results
+choose_C_SVM_cv(X_f, y_f, c_range, plot_color)
+#i. male cv results
+choose_C_SVM_cv(X_m, y_m, c_range, plot_color)
+
+def run_svm(Xtrain, Xtest, ytrain, ytest, c_param=1.0):
     svm_model = LinearSVC(C = c_param)
     svm_model.fit(Xtrain, ytrain)
 
@@ -269,21 +284,22 @@ def run_svm(Xtrain, Xtest, ytrain, ytest):
     print(classification_report(ytest, predictions))
     
     #Auc
-    scores = svm_model.predict_proba(Xtest)
-    fpr, tpr, _= roc_curve(ytest, scores[:, 1])
-    print('AUC = {}'.format(metrics.auc(fpr, tpr)))
+    scores = svm_model.decision_function(Xtest)
+    fpr, tpr, _= roc_curve(ytest, scores)
+    print('AUC = {}'.format(auc(fpr, tpr)))
 
     return svm_model
 
 # Run svm model 
-**Wait to define c parameter
+
+#Wait to define c parameter
 # i. Use the matching gender's features
-#svm_model_f = run_svm(Xtrain_f, Xtest_f, ytrain_f, ytest_f)
-#svm_model_m = run_svm(Xtrain_m, Xtest_m, ytrain_m, ytest_m)
+svm_model_f = run_svm(Xtrain_f, Xtest_f, ytrain_f, ytest_f)
+svm_model_m = run_svm(Xtrain_m, Xtest_m, ytrain_m, ytest_m)
 
 # ii. Cross features to see if differences arise
-#svm_model_f_for_m = run_svm(Xtrain_f, Xtest_f, ytrain_m, ytest_m)
-#svm_model_m_for_f = run_svm(Xtrain_m, Xtest_m, ytrain_f, ytest_f)
+svm_model_f_for_m = run_svm(Xtrain_f, Xtest_f, ytrain_m, ytest_m)
+svm_model_m_for_f = run_svm(Xtrain_m, Xtest_m, ytrain_f, ytest_f)
 
 #*******************************************
 #3. Baseline model
@@ -299,7 +315,7 @@ def run_dummy(Xtrain, Xtest, ytrain, ytest):
     #Auc
     scores_bl = dummy_clf.predict_proba(Xtest)
     fpr, tpr, _= roc_curve(ytest, scores_bl[:, 1])
-    print('AUC = {}'.format(metrics.auc(fpr, tpr)))
+    print('AUC = {}'.format(auc(fpr, tpr)))
 
     return dummy_clf
 
@@ -311,31 +327,29 @@ dummy_clf_m = run_dummy(Xtrain_m, Xtest_m, ytrain_m, ytest_m)
 dummy_clf_f_for_m = run_dummy(Xtrain_f, Xtest_f, ytrain_m, ytest_m)
 dummy_clf_m_for_f = run_dummy(Xtrain_m, Xtest_m, ytrain_f, ytest_f)
 
-
 #*************************************************
 #Compare performance - ROC curve
 
-#put back in svm_model
-def plot_roc_models(Xtest, ytest, log_reg_model, svm_model, dummy_clf):
+def plot_roc_models(Xtest, ytest, log_reg_model, svm_model, dummy_clf, gender=''):
     'Plot ROC Curve of implemented models'
     
     #Logistic Regression model
     scores = log_reg_model.decision_function(Xtest)
     fpr, tpr, _= roc_curve(ytest, scores)
     plt.plot(fpr,tpr, label = 'Logistic Regression')
-    print('AUC = {}'.format(metrics.auc(fpr, tpr)))
+    print('AUC = {}'.format(auc(fpr, tpr)))
 
     #svm model
-    scores = svm_model.predict_proba(Xtest)
-    fpr, tpr, _= roc_curve(ytest, scores[:, 1])
-    plt.plot(fpr,tpr, color = 'r', label = 'knn')
-    print('AUC = {}'.format(metrics.auc(fpr, tpr)))
+    scores = svm_model.decision_function(Xtest)
+    fpr, tpr, _= roc_curve(ytest, scores)
+    plt.plot(fpr,tpr, color = 'r', label = 'svm')
+    print('AUC = {}'.format(auc(fpr, tpr)))
 
     #Baseline Model
     scores_bl = dummy_clf.predict_proba(Xtest)
     fpr, tpr, _= roc_curve(ytest, scores_bl[:, 1])
     plt.plot(fpr,tpr, color = 'orange', label = 'baseline model')
-    print('AUC = {}'.format(metrics.auc(fpr, tpr)))
+    print('AUC = {}'.format(auc(fpr, tpr)))
     
     #Random Choice
     plt.plot([0, 1], [0, 1],'g--') 
@@ -343,13 +357,68 @@ def plot_roc_models(Xtest, ytest, log_reg_model, svm_model, dummy_clf):
     #Labels
     plt.xlabel('False positive rate')
     plt.ylabel('True positive rate')
-    plt.title('ROC Curve') #  - Logistic Regression')
+    plt.title('ROC Curve - {}'.format(gender))
 
-    #put back in svm
-    plt.legend(['Logistic Regression', 'SVM', 'Baseline ','Random Classifier']) 
+    plt.legend(['Logistic Regression', 'SVM', 'Baseline (most freq)','Random Classifier']) 
+    plt.savefig('./roc_{}'.format(gender))
     plt.show()
+    plt.close()
     
 #Implement
-plot_roc_models(Xtest_f, ytest_f, svm_model, log_reg_model_f, dummy_clf_f)
+plot_roc_models(Xtest_f, ytest_f, svm_model_f, log_reg_model_f, dummy_clf_f, gender='Female')
+plot_roc_models(Xtest_m, ytest_m, svm_model_m, log_reg_model_m, dummy_clf_m, gender='Male')
 
-#Test
+#Plot ROC models comparing feature crossed models
+def plot_roc_comparison(Xtest_a, Xtest_b, ytest_a, 
+    log_reg_model_match, log_reg_model_cross, 
+    dummy_clf_match, dummy_clf_cross,
+    gender=''):
+    'Plot ROC Curve of implemented models'
+
+    #Logistic Regression model - matched features
+    scores = log_reg_model_match.decision_function(Xtest_a)
+    fpr, tpr, _= roc_curve(ytest_a, scores)
+    plt.plot(fpr,tpr, label = 'Logistic Regression - matched features')
+    print('AUC = {}'.format(auc(fpr, tpr)))
+
+    #Logistic Regression model - crossed features
+    scores = log_reg_model_cross.decision_function(Xtest_b)
+    fpr, tpr, _= roc_curve(ytest_a, scores)
+    plt.plot(fpr,tpr, label = 'Logistic Regression - crossed features')
+    print('AUC = {}'.format(auc(fpr, tpr)))
+
+    #Baseline Model
+    scores_bl = dummy_clf_match.predict_proba(Xtest_a)
+    fpr, tpr, _= roc_curve(ytest_a, scores_bl[:, 1])
+    plt.plot(fpr,tpr, color = 'orange', label = 'baseline model - matched')
+    print('AUC = {}'.format(auc(fpr, tpr)))
+
+    #Baseline Model
+    scores_bl = dummy_clf_cross.predict_proba(Xtest_b)
+    fpr, tpr, _= roc_curve(ytest_a, scores_bl[:, 1])
+    plt.plot(fpr,tpr, color = 'orange', label = 'baseline model - crossed')
+    print('AUC = {}'.format(auc(fpr, tpr)))
+    
+    #Random Choice
+    plt.plot([0, 1], [0, 1],'g--') 
+
+    #Labels
+    plt.xlabel('False positive rate')
+    plt.ylabel('True positive rate')
+    plt.title('ROC Curve - crossed vs. matched features {}'.format(gender))
+
+    #put back in svm
+    plt.legend(['Matched Features', 'Crossed Features', 'Baseline - Matched','Baseline - Crossed','Random Classifier']) 
+    plt.savefig('./roc_comp_{}'.format(gender))
+    plt.show()
+    plt.close()
+
+plot_roc_comparison(Xtest_f, Xtest_m, ytest_f, 
+    log_reg_model_f, log_reg_model_m_for_f, 
+    dummy_clf_f, dummy_clf_m_for_f,
+    gender='Female')
+
+plot_roc_comparison(Xtest_m, Xtest_f, ytest_m, 
+    log_reg_model_m, log_reg_model_f_for_m, 
+    dummy_clf_m, dummy_clf_f_for_m,
+    gender='Male')
