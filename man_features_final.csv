@@ -1,0 +1,136 @@
+itemsets,support,itemsets_strings
+frozenset({'Man'}),1.0,Man
+frozenset({'Apparel'}),0.7485945051003948,Apparel
+frozenset({'Clothing'}),0.7485945051003948,Clothing
+frozenset({'Coat'}),0.4039014868031685,Coat
+frozenset({'Photo'}),0.32864916914903897,Photo
+frozenset({'Photography'}),0.32864916914903897,Photography
+frozenset({'Overcoat'}),0.310301176308752,Overcoat
+frozenset({'Room'}),0.28737109814473033,Room
+frozenset({'Accessories'}),0.2546414493669746,Accessories
+frozenset({'Accessory'}),0.2546414493669746,Accessory
+frozenset({'Suit'}),0.2394835573882441,Suit
+frozenset({'Portrait'}),0.2366258951688313,Portrait
+frozenset({'Hair'}),0.19369545672647834,Hair
+frozenset({'Crowd'}),0.18197986044127545,Crowd
+frozenset({'Jacket'}),0.1805420223732844,Jacket
+frozenset({'People'}),0.1776401441768377,People
+frozenset({'Furniture'}),0.15948702916125568,Furniture
+frozenset({'Tie'}),0.15814581119122756,Tie
+frozenset({'Pub'}),0.1490029297178857,Pub
+frozenset({'Performer'}),0.1475536282484414,Performer
+frozenset({'Bar Counter'}),0.14051346212737806,Bar Counter
+frozenset({'Court'}),0.12878148955438484,Court
+frozenset({'Finger'}),0.12124184665571637,Finger
+frozenset({'Female'}),0.1145210181465645,Female
+frozenset({'Dating'}),0.0970524319606183,Dating
+frozenset({'Shirt'}),0.09285682702873548,Shirt
+frozenset({'Leisure Activities'}),0.09284208836972416,Leisure Activities
+frozenset({'Electronics'}),0.07989335761390938,Electronics
+frozenset({'Interior Design'}),0.07875848087003942,Interior Design
+frozenset({'Blazer'}),0.0759335712262073,Blazer
+frozenset({'Sitting'}),0.07280897551581213,Sitting
+frozenset({'Outdoors'}),0.0666596794505428,Outdoors
+frozenset({'Glasses'}),0.06652539389066207,Glasses
+frozenset({'Musical Instrument'}),0.06471908934738856,Musical Instrument
+frozenset({'Plant'}),0.06406567546455434,Plant
+frozenset({'Wood'}),0.0614618457058917,Wood
+frozenset({'Door'}),0.06018940814458298,Door
+frozenset({'Home Decor'}),0.058972649961761374,Home Decor
+frozenset({'Night Life'}),0.05742345313679605,Night Life
+frozenset({'Table'}),0.057418540250458935,Table
+frozenset({'Musician'}),0.055833315592354896,Musician
+frozenset({'Skin'}),0.05355209870316177,Skin
+frozenset({'Sleeve'}),0.05269889410928552,Sleeve
+frozenset({'Woman'}),0.05217812815755299,Woman
+frozenset({'Jaw'}),0.0508778509070007,Jaw
+frozenset({'Nature'}),0.04684273359546312,Nature
+frozenset({'Necktie'}),0.04580938983589322,Necktie
+frozenset({'Screen'}),0.04401127343651486,Screen
+frozenset({'Grand Theft Auto'}),0.04359859098419852,Grand Theft Auto
+frozenset({'Tuxedo'}),0.043565838408617864,Tuxedo
+frozenset({'Hat'}),0.042478452899339866,Hat
+frozenset({'Lamp'}),0.03989099942846756,Lamp
+frozenset({'Drink'}),0.03923103503051721,Drink
+frozenset({'Beverage'}),0.03923103503051721,Beverage
+frozenset({'Fashion'}),0.035453025437287816,Fashion
+frozenset({'Pants'}),0.034969924947473065,Pants
+frozenset({'Audience'}),0.034431145079171166,Audience
+frozenset({'Display'}),0.03348132038733196,Display
+frozenset({'Monitor'}),0.03348132038733196,Monitor
+frozenset({'Transportation'}),0.032859021451299375,Transportation
+frozenset({'Cushion'}),0.03274766269432512,Cushion
+frozenset({'Building'}),0.0327214606338606,Building
+frozenset({'Vehicle'}),0.03205494572079412,Vehicle
+frozenset({'Table Lamp'}),0.030536863842630425,Table Lamp
+frozenset({'Piano'}),0.03046480817635297,Piano
+frozenset({'Vigil'}),0.030192961799033476,Vigil
+frozenset({'Arm'}),0.029367596894400782,Arm
+frozenset({'Food'}),0.028807527851971455,Food
+frozenset({'Smile'}),0.028457075293258374,Smile
+frozenset({'Beard'}),0.02806568201506946,Beard
+frozenset({'Plywood'}),0.02776435831972737,Plywood
+frozenset({'Pedestrian'}),0.027084742376428626,Pedestrian
+frozenset({'Shaking Hands'}),0.026663871780217115,Shaking Hands
+frozenset({'Robe'}),0.0265197604476622,Robe
+frozenset({'Chair'}),0.02585324553459573,Chair
+frozenset({'Sunglasses'}),0.025178542477634083,Sunglasses
+frozenset({'Ear'}),0.02513268887182116,Ear
+frozenset({'Restaurant'}),0.024025651817194776,Restaurant
+frozenset({'Pianist'}),0.02399126161283508,Pianist
+frozenset({'Frown'}),0.02397488532504475,Frown
+frozenset({'Military'}),0.023558927615170342,Military
+frozenset({'Military Uniform'}),0.022938266307916788,Military Uniform
+frozenset({'Shelf'}),0.02293662867913776,Shelf
+frozenset({'Gown'}),0.02289732558844096,Gown
+frozenset({'Couch'}),0.022494468908798814,Couch
+frozenset({'Girl'}),0.02239129829571973,Girl
+frozenset({'Glass'}),0.022376559636708437,Glass
+frozenset({'Prison'}),0.02206541016869214,Prison
+frozenset({'Dungeon'}),0.02200645553264695,Dungeon
+frozenset({'Text'}),0.021968790070729192,Text
+frozenset({'Teen'}),0.021714957609979053,Teen
+frozenset({'People Laughing'}),0.020786422092267283,People Laughing
+frozenset({'Alcohol'}),0.020766770546918882,Alcohol
+frozenset({'Hand'}),0.020419593245763864,Hand
+frozenset({'Art'}),0.020124820065537903,Art
+frozenset({'Kid'}),0.020108443777747568,Kid
+frozenset({'Child'}),0.020108443777747568,Child
+frozenset({'Selfie'}),0.01982677162775388,Selfie
+frozenset({'Video Gaming'}),0.018246459855986927,Video Gaming
+frozenset({'Hug'}),0.017841965547565748,Hug
+frozenset({'Tree'}),0.017530816079549455,Tree
+frozenset({'Worker'}),0.0171967398086267,Worker
+frozenset({'Animal'}),0.016802071272879717,Animal
+frozenset({'Theater'}),0.01606350069353579,Theater
+frozenset({'Sport'}),0.01553454659790809,Sport
+frozenset({'Sports'}),0.01553454659790809,Sports
+frozenset({'Haircut'}),0.01529545279616926,Haircut
+frozenset({'Window'}),0.01520047032698534,Window
+frozenset({'Boy'}),0.015056358994430426,Boy
+frozenset({'Long Sleeve'}),0.0142391822336929,Long Sleeve
+frozenset({'Lighting'}),0.014072144098231524,Lighting
+frozenset({'Computer'}),0.014054130181662159,Computer
+frozenset({'Evening Dress'}),0.013883816788642716,Evening Dress
+frozenset({'Cap'}),0.013849426584283021,Cap
+frozenset({'People Kissing'}),0.013775733289226532,People Kissing
+frozenset({'Soldier'}),0.013770820402889431,Soldier
+frozenset({'Car'}),0.013625071441555486,Car
+frozenset({'Automobile'}),0.013625071441555486,Automobile
+frozenset({'Crypt'}),0.013551378146498995,Crypt
+frozenset({'Leather Jacket'}),0.013438381760745709,Leather Jacket
+frozenset({'Urban'}),0.012857023544188956,Urban
+frozenset({'Speech'}),0.012716187469192107,Speech
+frozenset({'Light'}),0.0125376859322775,Light
+frozenset({'Dress Shirt'}),0.011987442662522376,Dress Shirt
+frozenset({'Pc'}),0.01182204215584003,Pc
+frozenset({'Symbol'}),0.011578035467764095,Symbol
+frozenset({'Water'}),0.011265248370968772,Water
+frozenset({'Press Conference'}),0.01112768755352999,Press Conference
+frozenset({'Desk'}),0.0110539942584735,Desk
+frozenset({'Pillow'}),0.010731381389003978,Pillow
+frozenset({'Driving'}),0.010708454586097512,Driving
+frozenset({'Senior Citizen'}),0.01049556284482321,Senior Citizen
+frozenset({'Food Court'}),0.010299047391339236,Food Court
+frozenset({'Flower'}),0.01019587677826015,Flower
+frozenset({'Blossom'}),0.01019587677826015,Blossom
