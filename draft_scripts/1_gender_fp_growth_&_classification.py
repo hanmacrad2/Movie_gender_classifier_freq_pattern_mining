@@ -69,7 +69,6 @@ def get_fp_gender(itemsets, gender, redundant_labels):
 
 def get_features(df_fp, df_ohe, gender):
     '''Extract features X and y from dataframe of frequent itemsets. Only extract features that have occured with female or male'''
-    
     #i.Get list of frequent items
     list_gender_freq_items = list(df_fp["itemsets_strings"])
     
@@ -218,11 +217,12 @@ log_reg_model_f = run_logistic(Xtrain_f, Xtest_f, ytrain_f, ytest_f)
 log_reg_model_m = run_logistic(Xtrain_m, Xtest_m, ytrain_m, ytest_m)
 
 # ii. Cross features to see if differences arise
+choose_C_cv(X_f, y_m, c_range, plot_color)
 log_reg_model_f_for_m = run_logistic(Xtrain_f, Xtest_f, ytrain_m, ytest_m)
 
 #choose_C_cv(X_m, y_f, c_range, plot_color)
+choose_C_cv(X_m, y_f, c_range, plot_color)
 log_reg_model_m_for_f = run_logistic(Xtrain_m, Xtest_m, ytrain_f, ytest_f)
-
 
 #*********************************************************************************************************
 #SVM

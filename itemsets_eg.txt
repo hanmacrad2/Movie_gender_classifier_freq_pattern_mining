@@ -1,3 +1,5 @@
+# an example of the preprocessed data used in this experiment
+
 ['Face', 'Grand Theft Auto', 'Halo', 'Head', 'Human', 'Indoors', 'Man', 'Person']
 ['Accessories', 'Accessory', 'Apparel', 'Banister', 'Clothing', 'Coat', 'Handrail', 'Human', 'Indoors', 'Jacket', 'Overcoat', 'Person', 'Prison', 'Railing', 'Staircase', 'Suit', 'Tie']
 ['Human', 'Indoors', 'Person']
