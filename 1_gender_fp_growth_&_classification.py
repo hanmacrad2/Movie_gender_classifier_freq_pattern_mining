@@ -67,7 +67,7 @@ def get_fp_gender(itemsets, gender, redundant_labels):
     
     return df_fp
 
-def get_features(df_fp, df_ohe):
+def get_features(df_fp, df_ohe, gender):
     '''Extract features X and y from dataframe of frequent itemsets. Only extract features that have occured with female or male'''
     
     #i.Get list of frequent items
@@ -77,10 +77,10 @@ def get_features(df_fp, df_ohe):
     df_ohe_gender_frs = df_ohe.loc[:, list_gender_freq_items]
     
     #Data
-    X = df_ohe_gender_frs.drop(['Female'], axis=1)
+    X = df_ohe_gender_frs.drop([gender], axis=1)
 
     #Extract X, y
-    y = df_ohe_gender_frs['Female']
+    y = df_ohe_gender_frs[gender]
     
     return X, y 
 
@@ -124,14 +124,14 @@ df_ohe = get_df_items(itemsets)
 redundant_labels_f = ['Person','Face','Woman','Human','Indoors','Head']
 df_fp_f = get_fp_gender(itemsets, 'Female', redundant_labels_f) 
 
-X_f, y_f = get_features(df_fp_f, df_ohe)
+X_f, y_f = get_features(df_fp_f, df_ohe, 'Female')
 
 #Get male features
 #redundant_labels_m = check_redundant(itemsets, 'Man')
 redundant_labels_m = ['Person','Face','Human','Indoors','Head']
 df_fp_m = get_fp_gender(itemsets, 'Man', redundant_labels_m) 
 
-X_m, y_m = get_features(df_fp_m, df_ohe)
+X_m, y_m = get_features(df_fp_m, df_ohe, 'Man')
 
 # Get train test splits for each gender
 testSizeX = 0.33 #67:33 split
@@ -182,7 +182,7 @@ def choose_C_cv(X, y, c_range, plot_color):
     plt.show()
     
 #Implement
-c_range = [0.001, 0.01, 1, 10, 100, 1000]
+c_range = [0.001, 0.01, 1, 10, 30, 50, 100, 500, 1000]
 plot_color = 'g' 
 
 #i. get female cv results
@@ -218,8 +218,6 @@ log_reg_model_f = run_logistic(Xtrain_f, Xtest_f, ytrain_f, ytest_f)
 log_reg_model_m = run_logistic(Xtrain_m, Xtest_m, ytrain_m, ytest_m)
 
 # ii. Cross features to see if differences arise
-c_range = [0.001, 0.01, 1, 10]
-choose_C_cv(X_f, y_m, c_range, plot_color)
 log_reg_model_f_for_m = run_logistic(Xtrain_f, Xtest_f, ytrain_m, ytest_m)
 
 #choose_C_cv(X_m, y_f, c_range, plot_color)
