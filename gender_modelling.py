@@ -115,7 +115,7 @@ df_ohe = get_df_items(itemsets)
 #Get female features
 
 #use check_redundant to get all labels that when they appear, always appear with 'Female'
-#redundant_labels_f = check_redundant(itemsets, 'Female')
+redundant_labels_f = check_redundant(itemsets, 'Female')
 
 #Manually elect the synonymous or uninformative labels that occur redundantly with 'Female' (from check_redundant)
 redundant_labels_f = ['Person','Face','Woman','Human','Indoors','Head']
@@ -181,12 +181,11 @@ c_range = [0.001, 0.01, 1, 10, 30, 50, 100, 500, 1000]
 plot_color = 'g' 
 
 #i. get female cv results
-#choose_C_cv(X_f, y_f, c_range, plot_color)
+choose_C_cv(X_f, y_f, c_range, plot_color)
 #ii. get male cv results
-#choose_C_cv(X_m, y_m, c_range, plot_color)
+choose_C_cv(X_m, y_m, c_range, plot_color)
 
 #Final model (use default penalty term - no performance improvement for varying penalty)
-
 def run_logistic(Xtrain, Xtest, ytrain, ytest):
     log_reg_model = LogisticRegression(penalty= 'l2')
     log_reg_model.fit(Xtrain, ytrain)
@@ -252,16 +251,14 @@ c_range = [0.001, 0.01, 1, 10, 100]
 plot_color = 'g' 
 
 #i. female cv results
-#choose_C_SVM_cv(X_f, y_f, c_range, plot_color)
+choose_C_SVM_cv(X_f, y_f, c_range, plot_color)
 #i. male cv results
-#choose_C_SVM_cv(X_m, y_m, c_range, plot_color)
+choose_C_SVM_cv(X_m, y_m, c_range, plot_color)
 
 def run_svm(Xtrain, Xtest, ytrain, ytest, c_param=1.0):
     svm_model = LinearSVC(C = c_param)
     svm_model.fit(Xtrain, ytrain)
 
-    #log_reg_model.intercept_
-    #log_reg_model.coef_
     #Predictions
     predictions = svm_model.predict(Xtest)
 
@@ -276,12 +273,10 @@ def run_svm(Xtrain, Xtest, ytrain, ytest, c_param=1.0):
 
     return svm_model
 
-# Run svm model 
-
-#Use C=1.0 (default) as per cross val results
+# Run svm model - Use C=1.0 (default) as per cross val results
 # i. Use the matching gender's features
-#svm_model_f = run_svm(Xtrain_f, Xtest_f, ytrain_f, ytest_f)
-#svm_model_m = run_svm(Xtrain_m, Xtest_m, ytrain_m, ytest_m)
+svm_model_f = run_svm(Xtrain_f, Xtest_f, ytrain_f, ytest_f)
+svm_model_m = run_svm(Xtrain_m, Xtest_m, ytrain_m, ytest_m)
 
 #*******************************************
 #3. Baseline model
