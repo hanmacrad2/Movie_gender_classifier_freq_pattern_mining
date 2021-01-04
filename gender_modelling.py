@@ -341,9 +341,9 @@ def plot_roc_models(Xtest, ytest, log_reg_model, svm_model, dummy_clf, gender=''
 plot_roc_models(Xtest_f, ytest_f, svm_model_f, log_reg_model_f, dummy_clf_f, gender='Female')
 plot_roc_models(Xtest_m, ytest_m, svm_model_m, log_reg_model_m, dummy_clf_m, gender='Male')
 
-#****************
+#********************************
 #Compare ROC curves
-#****************
+
 
 #Logistic Regression model - matched features
 scores = log_reg_model_f.decision_function(Xtest_f)
